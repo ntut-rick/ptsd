@@ -18,6 +18,10 @@ void App::Start() {
     gf->SetZIndex(m_Giraffe->GetZIndex() - 1);
     gf->Start();
     m_Giraffe->AppendChild(gf);
+    
+    real_score = 0;
+    m_score->SetScorePtr(&real_score);
+    m_score->Start();
 
     m_CurrentState = State::UPDATE;
 }
@@ -26,6 +30,8 @@ void App::Update() {
     auto cursorPos = Util::Input::GetCursorPosition();
     if (Util::Input::IsLButtonPressed()) {
         LOG_DEBUG("Left button pressed");
+        LOG_DEBUG("Score UP!");
+        real_score ++;
     }
     if (Util::Input::IsRButtonPressed()) {
         LOG_DEBUG("Right button pressed");
@@ -55,6 +61,7 @@ void App::Update() {
     }
 
     m_Giraffe->Update();
+    m_score->Update();
 }
 
 void App::End() { // NOLINT(this method will mutate members in the future)

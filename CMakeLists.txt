@@ -46,6 +46,7 @@ set(SRC_FILES
     ${SRC_DIR}/App.cpp
     ${SRC_DIR}/Triangle.cpp
     ${SRC_DIR}/Giraffe.cpp
+    ${SRC_DIR}/Score.cpp
 )
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(INCLUDE_FILES
@@ -78,6 +79,7 @@ set(INCLUDE_FILES
     ${INCLUDE_DIR}/Triangle.hpp
     ${INCLUDE_DIR}/Giraffe.hpp
     ${INCLUDE_DIR}/config.hpp
+    ${INCLUDE_DIR}/Score.hpp
 )
 set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 set(TEST_FILES

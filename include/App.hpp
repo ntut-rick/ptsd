@@ -5,6 +5,7 @@
 
 #include "Giraffe.hpp"
 #include "Triangle.hpp"
+#include "Score.hpp"
 
 class App {
 public:
@@ -25,6 +26,8 @@ private:
 
     Triangle m_Triangle;
     std::shared_ptr<Giraffe> m_Giraffe= std::make_shared<Giraffe>();
+    std::shared_ptr<ScoreText> m_score= std::make_shared<ScoreText>();
+    int real_score = 0;
 };
 
 #endif
