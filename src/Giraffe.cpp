@@ -7,15 +7,8 @@
 #include "config.hpp"
 
 void GiraffeText::Update(const Util::Transform &transform) {
-    auto &pos = m_Transform.translation;
-    auto &scale = m_Transform.scale;
-    auto &rotation = m_Transform.rotation;
-
-    pos += transform.translation;
-    rotation += transform.rotation;
-    scale = transform.scale;
-
-    m_Drawable->Draw(m_Transform, m_ZIndex);
+    m_Transform = transform;
+    Draw();
 }
 
 void GiraffeText::Start() {
@@ -43,14 +36,15 @@ void Giraffe::Update(const Util::Transform &transform) {
         dir * delta * 1000.0F, 2 * delta,
         glm::vec2(1, 1) * (std::sin(rotation / 2) + 1.0F) * 100.0F};
 
-    pos += deltaTransform.translation;
+    pos = {0,0};
     rotation += deltaTransform.rotation;
-    scale = deltaTransform.scale;
+    scale = {1,1};
 
 
-    m_Drawable->Draw(m_Transform, m_ZIndex);
+    // m_Drawable->Draw(m_Transform, m_ZIndex);
+    Draw();
     for (auto &child : m_Children) {
-        child->Update(deltaTransform);
+        child->Update(m_Transform);
     }
 
     // LOG_DEBUG("GIRA: x: {}, y: {}", pos.x, pos.y);
