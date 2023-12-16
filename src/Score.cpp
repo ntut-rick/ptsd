@@ -10,7 +10,7 @@
 using std::to_string;
 
 void ScoreText::Update(const Util::Transform &transform) {
-    LOG_DEBUG("Score: {}", *m_score_ptr);
+    // LOG_DEBUG("Score: {}", *m_score_ptr);
     this->SetDrawable(
         std::make_unique<Util::Text>(m_Font, m_Size, to_string(*m_score_ptr))
     );

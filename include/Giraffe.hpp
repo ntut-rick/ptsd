@@ -32,6 +32,7 @@ public:
     void Update(const Util::Transform &transform = Util::Transform()) override;
 
     void Start() override;
+    glm::vec2 GetPos() const {return m_Transform.translation;};
 };
 
 #endif

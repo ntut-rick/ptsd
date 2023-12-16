@@ -4,6 +4,7 @@
 #include "Util/Input.hpp"
 #include "Util/Keycode.hpp"
 #include "Util/Logger.hpp"
+#include "config.hpp"
 
 void App::Start() {
     LOG_TRACE("Start");
@@ -26,42 +27,43 @@ void App::Start() {
     m_CurrentState = State::UPDATE;
 }
 
+bool IsInhitbox(const glm::vec2 cursorPos, const glm::vec2 giraffe, float range) {
+    auto dis = glm::distance(cursorPos, giraffe);
+    LOG_DEBUG("distence: {}", dis);
+    return dis < range;
+}
+
 void App::Update() {
     auto cursorPos = Util::Input::GetCursorPosition();
+    // LOG_DEBUG("raw pos: {}, {}", cursorPos.x, cursorPos.y);
+    // FIXME: raw pos' (0,0) at top left, convert to ptsd pos witch's (0,0) at center
+    cursorPos.x = cursorPos.x - WINDOW_WIDTH/2;
+    cursorPos.y = -(cursorPos.y - WINDOW_HEIGHT/2);
+    // LOG_DEBUG("pstd pos: {}, {}", cursorPos.x, cursorPos.y);
+
     if (Util::Input::IsLButtonPressed()) {
         LOG_DEBUG("Left button pressed");
         LOG_DEBUG("Score UP!");
-        real_score ++;
-    }
-    if (Util::Input::IsRButtonPressed()) {
-        LOG_DEBUG("Right button pressed");
-    }
-    if (Util::Input::IsMButtonPressed()) {
-        LOG_DEBUG("Middle button pressed");
-    }
-    if (Util::Input::IfScroll()) {
-        auto delta = Util::Input::GetScrollDistance();
-        LOG_DEBUG("Scrolling: x: {}, y: {}", delta.x, delta.y);
-    }
-    if (Util::Input::IsMouseMoving()) {
-        // LOG_DEBUG("Mouse moving! x:{}, y{}", cursorPos.x, cursorPos.y);
+        if (
+            IsInhitbox(cursorPos, m_Giraffe->GetPos(), 100.0f)
+        ) {
+            real_score ++;
+        }
     }
 
-    if (Util::Input::IsKeyPressed(Util::Keycode::ESCAPE) ||
-        Util::Input::IfExit()) {
-        m_CurrentState = State::END;
-    }
-
-    if (Util::Input::IsKeyPressed(Util::Keycode::A)) {
-        LOG_DEBUG("A");
-    }
-    if (Util::Input::IsKeyPressed(Util::Keycode::B)) {
-        LOG_DEBUG("B");
-        Util::Input::SetCursorPosition({0.0F, 0.0F});
+    if (Util::Input::IsKeyPressed(Util::Keycode::R)) {
+        LOG_DEBUG("R as Reset!");
+        real_score = 0;
     }
 
     m_Giraffe->Update();
     m_score->Update();
+
+    // DON'T TOUCH, HELPFUL
+    if (Util::Input::IsKeyPressed(Util::Keycode::ESCAPE) ||
+        Util::Input::IfExit()) {
+        m_CurrentState = State::END;
+    }
 }
 
 void App::End() { // NOLINT(this method will mutate members in the future)

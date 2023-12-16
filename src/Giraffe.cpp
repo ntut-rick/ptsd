@@ -24,20 +24,17 @@ void Giraffe::Update(const Util::Transform &transform) {
     auto &scale = m_Transform.scale;
     auto &rotation = m_Transform.rotation;
 
-    if (pos.y > WINDOW_HEIGHT || pos.y + WINDOW_HEIGHT < 0) {
+    if (pos.y > WINDOW_HEIGHT/2 || pos.y + WINDOW_HEIGHT/2 < 0) {
         dir.y *= -1;
     }
-    if (pos.x > WINDOW_WIDTH || pos.x + WINDOW_WIDTH < 0) {
+    if (pos.x > WINDOW_WIDTH/2 || pos.x + WINDOW_WIDTH/2 < 0) {
         dir.x *= -1;
     }
 
     auto delta = static_cast<float>(Util::Time::GetDeltaTime());
-    Util::Transform deltaTransform{
-        dir * delta * 1000.0F, 2 * delta,
-        glm::vec2(1, 1) * (std::sin(rotation / 2) + 1.0F) * 100.0F};
 
-    pos = {0,0};
-    rotation += deltaTransform.rotation;
+    pos += dir * 10.0f;
+    rotation += delta * 10;
     scale = {1,1};
 
 
