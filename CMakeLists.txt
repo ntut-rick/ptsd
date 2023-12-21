@@ -44,9 +44,8 @@ set(SRC_FILES
     ${SRC_DIR}/Util/GameObject.cpp
 
     ${SRC_DIR}/App.cpp
-    ${SRC_DIR}/Triangle.cpp
-    ${SRC_DIR}/Giraffe.cpp
-    ${SRC_DIR}/Score.cpp
+    ${SRC_DIR}/ptsdio.cpp
+    ${SRC_DIR}/TwoCreditsValley/GameUpdate.cpp
 )
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(INCLUDE_FILES
@@ -75,17 +74,23 @@ set(INCLUDE_FILES
     ${INCLUDE_DIR}/Util/TransformUtils.hpp
     ${INCLUDE_DIR}Util/GameObject.hpp
 
-    ${INCLUDE_DIR}/App.hpp
-    ${INCLUDE_DIR}/Triangle.hpp
-    ${INCLUDE_DIR}/Giraffe.hpp
     ${INCLUDE_DIR}/config.hpp
-    ${INCLUDE_DIR}/Score.hpp
+    ${INCLUDE_DIR}/App.hpp
+    ${INCLUDE_DIR}/ptsdio.hpp
+
+    ${INCLUDE_DIR}/TwoCreditsValley/GameManager.hpp
+    ${INCLUDE_DIR}/TwoCreditsValley/AbstractFactroy/IO.hpp
+    ${INCLUDE_DIR}/TwoCreditsValley/Model/Drawable.hpp
+    ${INCLUDE_DIR}/TwoCreditsValley/Unity/Vector2.hpp
 )
 set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 set(TEST_FILES
     ${TEST_DIR}/SimpleTest.cpp
     ${TEST_DIR}/NotSimpleTest.cpp
     ${TEST_DIR}/TransformTest.cpp
+    ${TEST_DIR}/TwoCreditsValley/ut_vector2.cpp
+    # ${TEST_DIR}/TwoCreditsValley/ut_hitboxPool.cpp
+    # ${TEST_DIR}/TwoCreditsValley/ut_rect.cpp
 )
 
 add_executable(Sample
