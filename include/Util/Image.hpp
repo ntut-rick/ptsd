@@ -31,9 +31,8 @@ private:
     static std::unique_ptr<Core::UniformBuffer<Core::Matrices>> s_UniformBuffer;
 
 private:
-    std::unique_ptr<Core::Texture> m_Texture = nullptr;
-    std::unique_ptr<SDL_Surface, std::function<void(SDL_Surface *)>> m_Surface =
-        nullptr;
+    std::shared_ptr<Core::Texture> m_Texture = nullptr;
+    std::shared_ptr<SDL_Surface> m_Surface = nullptr;
 };
 } // namespace Util
 

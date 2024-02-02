@@ -2,10 +2,18 @@
 
 #include "pch.hpp"
 
+#include <unordered_map>
+
 #include "Util/Image.hpp"
 #include "Util/TransformUtils.hpp"
 
 #include "config.hpp"
+
+
+struct ImageInfo {
+    std::shared_ptr<SDL_Surface> Surface;
+    std::shared_ptr<Core::Texture> Texture;
+};
 
 namespace Util {
 Image::Image(const std::string &filepath) {
@@ -19,6 +27,17 @@ Image::Image(const std::string &filepath) {
         InitUniformBuffer();
     }
 
+    static std::unordered_map<std::string, struct ImageInfo> s_ResourceMap = {};
+
+    try {
+        auto result = s_ResourceMap.at(filepath);
+        m_Surface = result.Surface;
+        m_Texture = result.Texture;
+        return;
+    } catch(const std::out_of_range&) {
+        /* expected */
+    }
+    
     m_Surface = {IMG_Load(filepath.c_str()), SDL_FreeSurface};
 
     if (m_Surface == nullptr) {
@@ -29,6 +48,12 @@ Image::Image(const std::string &filepath) {
     m_Texture = std::make_unique<Core::Texture>(
         m_Surface->format->BytesPerPixel, m_Surface->w, m_Surface->h,
         m_Surface->pixels);
+    
+    LOG_INFO("Load file: {}", filepath);
+
+    s_ResourceMap.emplace(std::make_pair(
+        std::string(filepath),
+        struct ImageInfo{m_Surface, m_Texture}));
 }
 
 void Image::Draw(const Util::Transform &transform, const float zIndex) {
