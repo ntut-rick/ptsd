@@ -6,15 +6,16 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
   };
 
-  outputs = { self, nixpkgs}:
-  let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
-  in
-  {
-    packages = {
-      x86_64-linux = {
-        default = pkgs.stdenv.mkDerivation {
+  outputs =
+    { self, nixpkgs }:
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs { inherit system; };
+    in
+    {
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+      packages = {
+        x86_64-linux.default = pkgs.stdenv.mkDerivation {
           name = "ptsd";
           # `nix build` fails because of a problem with cmake fetchcontent.
           # To avoid successful execution followed by failure,
@@ -24,13 +25,13 @@
             pkgs.cmake
             pkgs.ninja
             pkgs.clang
-#            pkgs.SDL2
-#            pkgs.SDL2_image
-#            pkgs.SDL2_ttf
-#            pkgs.SDL2_mixer
-#            pkgs.spdlog
-#            pkgs.glm
-#            pkgs.gtest
+            # pkgs.SDL2
+            # pkgs.SDL2_image
+            # pkgs.SDL2_ttf
+            # pkgs.SDL2_mixer
+            # pkgs.spdlog
+            # pkgs.glm
+            # pkgs.gtest
           ];
           buildInputs = [
             pkgs.libGLU
@@ -41,5 +42,4 @@
         };
       };
     };
-  };
 }
