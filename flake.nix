@@ -1,5 +1,5 @@
 {
-  description = "PTSD development enviroment";
+  description = "PTSD development environment";
   nixConfig.bash-prompt-prefix = "(PTSD)";
 
   inputs = {
@@ -35,41 +35,47 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
       in
-      {
+      rec {
+        rr = pkgs.cmake;
+        nativePackages = [
+          pkgs.cmake
+          pkgs.ninja
+          pkgs.clang
+        ];
+        runtimePackages = [
+          pkgs.libGLU
+          pkgs.mesa
+          pkgs.xorg.libX11
+          pkgs.xorg.libXext
+          pkgs.freetype # require by sdl2_ttf
+        ];
         formatter = pkgs.nixfmt-rfc-style;
         packages = {
           default = pkgs.stdenv.mkDerivation rec {
             name = "ptsd";
             src = ./.;
-            nativeBuildInputs = [
-              pkgs.cmake
-              pkgs.ninja
-              pkgs.clang
-            ];
+            nativeBuildInputs = nativePackages;
             buildInputs =
-              [
-                pkgs.libGLU
-                pkgs.mesa
-                pkgs.xorg.libX11
-                pkgs.xorg.libXext
-              ]
+              runtimePackages
               ++ lib.optionals (system == "aarch64-darwin") [
                 pkgs.darwin.apple_sdk.frameworks.Cocoa
                 pkgs.darwin.apple_sdk.frameworks.IOKit
                 pkgs.darwin.apple_sdk.frameworks.ForceFeedback
                 pkgs.darwin.apple_sdk.frameworks.AVFoundation
               ];
-            unpackPhase = ''
-                          ln -s ${glew-src} ${src}/lib/glew
-              ln -s ${sdl2-src} ${src}/lib/sdl2
-              ln -s ${sdl2_image-src} ${src}/lib/sdl2_image
-              ln -s ${sdl2_ttf-src} ${src}/lib/sdl2_ttf
-              ln -s ${sdl2_mixer-src} ${src}/lib/sdl2_mixer
-              ln -s ${spdlog-src} ${src}/lib/spdlog
-              ln -s ${glm-src} ${src}/lib/glm
-              ln -s ${googletest-src} ${src}/lib/googletest
-              ln -s ${imgui-src} ${src}/lib/imgui
-              ln -s ${nlohmann_json-src} ${src}/lib/nlohmann_json
+            cmakeFlags = [ "-DCMAKE_BUILD_TYPE=Debug" ];
+            patchPhase = ''
+              mkdir ./lib
+              ln -s ${glew-src}          ./lib/glew
+              ln -s ${sdl2-src}          ./lib/sdl2
+              ln -s ${sdl2_image-src}    ./lib/sdl2_image
+              ln -s ${sdl2_ttf-src}      ./lib/sdl2_ttf
+              ln -s ${sdl2_mixer-src}    ./lib/sdl2_mixer
+              ln -s ${spdlog-src}        ./lib/spdlog
+              ln -s ${glm-src}           ./lib/glm
+              ln -s ${googletest-src}    ./lib/googletest
+              ln -s ${imgui-src}         ./lib/imgui
+              ln -s ${nlohmann_json-src} ./lib/nlohmann_json
             '';
           };
         };
