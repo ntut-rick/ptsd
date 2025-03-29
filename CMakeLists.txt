@@ -24,10 +24,12 @@ endif()
 
 option(PTSD_ENABLE_PCH "Turn on PCH to increase compilation speed" OFF)
 
-include(cmake/Dependencies.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(SRC_FILES
+    ${SRC_DIR}/config.cpp
+
     ${SRC_DIR}/Core/Context.cpp
     ${SRC_DIR}/Core/DebugMessageCallback.cpp
     ${SRC_DIR}/Core/VertexArray.cpp
@@ -52,6 +54,7 @@ set(SRC_FILES
     ${SRC_DIR}/Util/Color.cpp
     ${SRC_DIR}/Util/Animation.cpp
     ${SRC_DIR}/Util/MissingTexture.cpp
+    ${SRC_DIR}/Util/Position.cpp
 )
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(INCLUDE_FILES
@@ -70,6 +73,8 @@ set(INCLUDE_FILES
     ${INCLUDE_DIR}/Core/Texture.hpp
     ${INCLUDE_DIR}/Core/TextureUtils.hpp
     ${INCLUDE_DIR}/Core/Drawable.hpp
+    ${INCLUDE_DIR}/Core/MissingFontTextureBase64.hpp
+    ${INCLUDE_DIR}/Core/MissingImageTextureBase64.hpp
 
     ${INCLUDE_DIR}/Util/LoadTextFile.hpp
     ${INCLUDE_DIR}/Util/Logger.hpp
@@ -88,6 +93,7 @@ set(INCLUDE_FILES
     ${INCLUDE_DIR}/Util/MissingTexture.hpp
     ${INCLUDE_DIR}/Util/Base64.hpp
     ${INCLUDE_DIR}/Util/Animation.hpp
+    ${INCLUDE_DIR}/Util/Position.hpp
 )
 set(EXAMPLE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/example)
 set(EXAMPLE_FILES
@@ -122,6 +128,13 @@ target_include_directories(PTSD SYSTEM PRIVATE
 target_include_directories(PTSD PRIVATE
     ${INCLUDE_DIR}
 )
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(PTSD PRIVATE PTSD_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
+else()
+    # TODO
+    message(AUTHOR_WARNING "relative PTSD_ASSETS_DIR is WIP, Please use `-DCMAKE_BUILD_TYPE=Debug` build for now.")
+    target_compile_definitions(PTSD PRIVATE PTSD_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
+endif()
 if (${PTSD_ENABLE_PCH})
     target_precompile_headers(PTSD PRIVATE
         include/pch.hpp
@@ -131,8 +144,11 @@ endif()
 target_compile_options(PTSD PRIVATE
     ${TARGET_COMPILE_OPTIONS}
 )
-set(DEPENDENCY_INCLUDE_DIRS ${DEPENDENCY_INCLUDE_DIRS} PARENT_SCOPE)
-set(DEPENDENCY_LINK_LIBRARIES ${DEPENDENCY_LINK_LIBRARIES} PARENT_SCOPE)
+
+if(NOT PROJECT_IS_TOP_LEVEL)
+    set(DEPENDENCY_INCLUDE_DIRS ${DEPENDENCY_INCLUDE_DIRS} PARENT_SCOPE)
+    set(DEPENDENCY_LINK_LIBRARIES ${DEPENDENCY_LINK_LIBRARIES} PARENT_SCOPE)
+endif()
 
 add_executable(Example EXCLUDE_FROM_ALL
     ${EXAMPLE_FILES}
@@ -155,7 +171,6 @@ enable_testing()
 
 add_executable(Tests EXCLUDE_FROM_ALL
     ${TEST_FILES}
-    ${SRC_FILES}
 )
 target_link_libraries(Tests
     PTSD
@@ -173,7 +188,6 @@ target_compile_options(Tests PRIVATE
 
 add_executable(AudioTest EXCLUDE_FROM_ALL
     ${TEST_DIR}/Interactive/Audio.cpp
-    ${SRC_FILES}
 )
 target_link_libraries(AudioTest
     PTSD

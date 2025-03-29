@@ -8,6 +8,8 @@
 
 #include "Util/Keycode.hpp" // for Keycode
 
+#include "Util/Position.hpp" // Util::PTSDPosition
+
 namespace Util {
 
 /**
@@ -43,14 +45,13 @@ public:
 
     /**
      * @brief Retrieves the current position of the cursor.
-     * @note The cursor position is relative to the upper-left corner of the
-     * client area of the window.
      *
-     * @return The cursor position as vec2(x, y).
+     * @return The cursor position as a PTSDPosition (x, y).
      *
      * @see Util::Input::SetCursorPosition()
+     * @see Util::PTSDPosition
      */
-    static glm::vec2 GetCursorPosition();
+    static Util::PTSDPosition GetCursorPosition();
 
     /**
      * @brief Check if a specific key is currently pressed.
@@ -113,13 +114,13 @@ public:
     /**
      * @brief Sets the position of the cursor.
      * @param pos The position to set the cursor to.
-     * @note The cursor position is relative to the upper-left corner of the
-     * client area of the window.
-     * @note It also generates a mouse motion event, which leads
-     * Util::Input::IsMouseMoving() to return true in this update-cycle.
+     * @note This also triggers a mouse motion event, making Util::Input::IsMouseMoving() return true 
+     *       in the current update cycle.
+     *
      * @see Util::Input::GetCursorPosition()
+     * @see Util::PTSDPosition
      */
-    static void SetCursorPosition(const glm::vec2 &pos);
+    static void SetCursorPosition(const Util::PTSDPosition &pos);
 
     /**
      * @brief Updates the state of the input.
@@ -133,7 +134,7 @@ private:
 
     static SDL_Event s_Event;
 
-    static glm::vec2 s_CursorPosition;
+    static Util::PTSDPosition s_CursorPosition;
     static glm::vec2 s_ScrollDistance;
 
     static std::unordered_map<Keycode, std::pair<bool, bool>> s_KeyState;

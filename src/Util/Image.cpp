@@ -5,9 +5,7 @@
 
 #include "Core/Texture.hpp"
 #include "Core/TextureUtils.hpp"
-
 #include "Util/MissingTexture.hpp"
-#include "Util/TransformUtils.hpp"
 
 #include "config.hpp"
 #include <glm/fwd.hpp>
@@ -17,7 +15,7 @@ std::shared_ptr<SDL_Surface> LoadSurface(const std::string &filepath) {
                                                 SDL_FreeSurface);
 
     if (surface == nullptr) {
-        surface = {GetMissingTextureSDLSurface(), SDL_FreeSurface};
+        surface = {Util::GetMissingImageTextureSDLSurface(), SDL_FreeSurface};
         LOG_ERROR("Failed to load image: '{}'", filepath);
         LOG_ERROR("{}", IMG_GetError());
     }
@@ -26,7 +24,7 @@ std::shared_ptr<SDL_Surface> LoadSurface(const std::string &filepath) {
 }
 
 namespace Util {
-Image::Image(const std::string &filepath)
+Image::Image(const std::string &filepath, bool useAA)
     : m_Path(filepath) {
     if (s_Program == nullptr) {
         InitProgram();
@@ -40,9 +38,15 @@ Image::Image(const std::string &filepath)
 
     auto surface = s_Store.Get(filepath);
 
+    if (surface == nullptr) {
+        LOG_ERROR("Failed to load image: '{}'", filepath);
+        LOG_ERROR("{}", IMG_GetError());
+        surface = {GetMissingImageTextureSDLSurface(), SDL_FreeSurface};
+    }
+
     m_Texture = std::make_unique<Core::Texture>(
         Core::SdlFormatToGlFormat(surface->format->format), surface->w,
-        surface->h, surface->pixels);
+        surface->h, surface->pixels, useAA);
     m_Size = {surface->w, surface->h};
 }
 
@@ -52,6 +56,10 @@ void Image::SetImage(const std::string &filepath) {
     m_Texture->UpdateData(Core::SdlFormatToGlFormat(surface->format->format),
                           surface->w, surface->h, surface->pixels);
     m_Size = {surface->w, surface->h};
+}
+
+void Image::UseAntiAliasing(bool useAA) {
+    m_Texture->UseAntiAliasing(useAA);
 }
 
 void Image::Draw(const Core::Matrices &data) {
@@ -67,8 +75,9 @@ void Image::Draw(const Core::Matrices &data) {
 
 void Image::InitProgram() {
     // TODO: Create `BaseProgram` from `Program` and pass it into `Drawable`
-    s_Program = std::make_unique<Core::Program>("../assets/shaders/Base.vert",
-                                                "../assets/shaders/Base.frag");
+    s_Program =
+        std::make_unique<Core::Program>(PTSD_ASSETS_DIR "/shaders/Base.vert",
+                                        PTSD_ASSETS_DIR "/shaders/Base.frag");
     s_Program->Bind();
 
     GLint location = glGetUniformLocation(s_Program->GetId(), "surface");

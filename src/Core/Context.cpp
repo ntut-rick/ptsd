@@ -10,9 +10,13 @@
 
 #include "config.hpp"
 
+using Util::ms_t;
+
 namespace Core {
 Context::Context() {
     Util::Logger::Init();
+    PTSD_Config::Init();
+    Util::Logger::SetLevel(PTSD_Config::DEFAULT_LOG_LEVEL);
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         LOG_ERROR("Failed to initialize SDL");
@@ -38,10 +42,10 @@ Context::Context() {
         LOG_ERROR("Failed to initialize SDL_mixer");
         LOG_ERROR(SDL_GetError());
     }
-
-    m_Window =
-        SDL_CreateWindow(TITLE, WINDOW_POS_X, WINDOW_POS_Y, WINDOW_WIDTH,
-                         WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    m_Window = SDL_CreateWindow(
+        PTSD_Config::TITLE.c_str(), PTSD_Config::WINDOW_POS_X,
+        PTSD_Config::WINDOW_POS_Y, PTSD_Config::WINDOW_WIDTH,
+        PTSD_Config::WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 
     if (m_Window == nullptr) {
         LOG_ERROR("Failed to create window");
@@ -118,14 +122,36 @@ void Context::Setup() {
 }
 
 void Context::Update() {
-    Util::Time::Update();
     Util::Input::Update();
     SDL_GL_SwapWindow(m_Window);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    constexpr double frameTime =
-        FPS_CAP != 0 ? 1000 / static_cast<double>(FPS_CAP) : 0;
-    SDL_Delay(static_cast<Uint32>(frameTime - Util::Time::GetDeltaTime()));
+    static ms_t frameTime =
+        PTSD_Config::FPS_CAP != 0 ? 1000.0F / PTSD_Config::FPS_CAP : 0;
+    ms_t afterUpdate = Util::Time::GetElapsedTimeMs();
+    ms_t updateTime = afterUpdate - m_BeforeUpdateTime;
+    if (updateTime < frameTime) {
+        SDL_Delay(static_cast<Uint32>(frameTime - updateTime));
+    }
+    m_BeforeUpdateTime = Util::Time::GetElapsedTimeMs();
+
+    // Here's a figure explaining how Delta time & Delay work:
+    //
+    // --|--UT--|--Delay--|--UT--|--
+    //   |---Delta time---|  ^ Last delta time used here
+    //   ^                ^
+    //   (s_Last)         (s_Now) Time::Update here
+    //
+    // # Updating/rendering time is denoted as "UT"
+    Util::Time::Update();
+
+#ifdef DEBUG_DELTA_TIME
+    auto deltaTime = Util::Time::GetDeltaTimeMs();
+    LOG_DEBUG("Delta(Update+Delay): {:.1f}({:.1f}+{:.1f}) ms, FPS: {:.1f}",
+              deltaTime, updateTime,
+              updateTime < frameTime ? frameTime - updateTime : 0,
+              1000.0f / deltaTime);
+#endif // DEBUG_DELTA_TIME
 }
 
 std::shared_ptr<Context> Context::GetInstance() {
@@ -137,6 +163,11 @@ std::shared_ptr<Context> Context::GetInstance() {
 
 void Context::SetWindowIcon(const std::string &path) {
     SDL_Surface *image = IMG_Load(path.c_str());
-    SDL_SetWindowIcon(m_Window, image);
+    if (image) {
+        SDL_SetWindowIcon(m_Window, image);
+        SDL_FreeSurface(image);
+        return;
+    }
+    LOG_ERROR("Failed to load image: {}", path);
 }
 } // namespace Core
